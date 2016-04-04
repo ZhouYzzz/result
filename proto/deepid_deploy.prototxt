@@ -1,0 +1,30 @@
+name: "deepid_deploy"
+layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param { 
+    shape: { dim:1 dim:3 dim:55 dim:47 }
+  }
+}
+layer {
+  name: "conv1"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  param { name: "conv1_w" }
+  param { name: "conv1_b" }
+  convolution_param {
+    num_output: 20
+    kernel_size: 4
+  }
+}
+layer {
+  name: "pool1"
+  type: "Pooling"
+  bottom: "conv1"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+  }
+}
