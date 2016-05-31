@@ -1,0 +1,48 @@
+Title         : Mixture of Gaussians
+Author        : Yizhuang ZHOU, 2014011751
+Logo          : True
+Cite All    : true
+
+[TITLE]
+
+# Background
+
+We may come across statistic problems where statistics of 
+different kinds of random variables are mixed togethor. 
+For example, we may be only interested in the ages and income
+of professors (**sub-population**) in Tsinghua University, 
+but have statisics of basic infomations (**observations**) of all 
+the teachers (**popolation**), without the knowledge who is a
+ professor or not. The only assumption we can make is that the ages 
+ of professors and non-professors may subject to two different gaussian 
+ distribution(or normal distribution).
+
+
+We can call the combination of several different distributions from the same class
+*[Mixture distribution]*, and the model to solve it *[Mixture model]*, which
+ represents the presence of subpopulations within an overall population.
+Picture below shows
+a combination of 3 normal distributions with equal hypothesis.
+
+![Gaussian-mixture-example]
+
+# Mixture of Two Gaussian Distribution
+
+To simplify the problem, we first start with two Gaussian distribution: 
+
+~ Equation { #eq-euler }
+e = \lim_{n\to\infty} \left( 1 + \frac{1}{n} \right)^n
+~
+
+~ Equation
+e = \lim_{n\to\infty}
+~
+
+----------------------------- { width:100% }
+
+
+[Gaussian-mixture-example]: images/Gaussian-mixture-example.svg "Gaussian-mixture-example" { width:auto; max-width:90% }
+
+[Mixture distribution]: https://en.wikipedia.org/wiki/Mixture_distribution
+
+[Mixture model]: https://en.wikipedia.org/wiki/Mixture_model
