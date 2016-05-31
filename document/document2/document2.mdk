@@ -1,0 +1,12 @@
+Title         : Welcome
+Author        : You
+Logo          : True
+
+[TITLE]
+
+$X \sim N(\mu_1,\Sigma_1)$, 
+$Y \sim N(\mu_2,\Sigma_2)$
+
+
+
+[reference manual]: http://research.microsoft.com/en-us/um/people/daan/madoko/doc/reference.html  "Madoko reference manual"
