@@ -1,12 +1,198 @@
-Title         : Welcome
-Author        : You
+Title         : Mixture of Gaussians
+Author        : Yizhuang ZHOU, 2014011751
 Logo          : True
 
 [TITLE]
 
+
+
+# Background
+
+We may come across statistic problems where statistics of 
+different kinds of random variables are mixed togethor. 
+For example, we may be only interested in the ages and income
+of professors (**sub-population**) in Tsinghua University, 
+but have statisics of basic infomations (**observations**) of all 
+the teachers (**popolation**), without the knowledge who is a
+ professor or not. The only assumption we can make is that the ages 
+ of professors and non-professors may subject to two different gaussian 
+ distribution(or normal distribution).
+
+
+We can call the combination of several different distributions from the same class
+*[Mixture distribution]*, and the model to solve it *[Mixture model]*, which
+ represents the presence of subpopulations within an overall population.
+Picture below shows
+a combination of 3 single variable normal distributions with equal hypothesis.
+
+![Gaussian-mixture-example]
+
+In real life applications, mixture models can be used for identification problems.
+For example, suppose one's handwriting can be described as a vector which subjects to
+gaussian distribution, we can then tell from a large database of handwritings which one 
+is from the suspect, and to their similarity.
+
+# Mixture of Bivariate Gaussian Distribution
+
+To simplify the problem, we first start with two bivariate(2 variable $x_1$, $x_2$) gaussian distribution: 
 $X \sim N(\mu_1,\Sigma_1)$, 
-$Y \sim N(\mu_2,\Sigma_2)$
+$Y \sim N(\mu_2,\Sigma_2)$. 
+Define random variable $Z$ is a mixture of $X$ and $Y$, then its density 
+$F=w F_1 + (1-w)F_2$, where $F_1$ and $F_2$ is the densities of $X$ and $Y$, $w$ indicates
+the weight. Higher $w$ means more samples are taken from $X$.
+
+Given the statistics of $Z$, we should make statistical inferences of $X$ and $Y$. That is,
+figure out proper values for parameters $\mu_1$, $\mu_2$, $\Sigma_1$, $\Sigma_2$ and $w$, and
+how well does the model support it.
+
+Picture below is an example of 3 sets of 2d gaussian distributions (unlabeled). The black ellipses
+gives good estimation of parameters.
+
+![sample_gmm]
 
 
+# Learning Mixtures of Gaussians
 
+## Clustering: from K-means to EM
+
+Given all the samples in a specified subset of gaussian mixture, we can safely give estimation
+on the distribution by traditional methods. As a result, in most cases the question turns out 
+to find which gaussian distribution does one sample belong to, to say, a clustering problem.
+
+## K-means Clustering
+
+K-means clustering is one of the most well-known and widly-used clustering algorithms. The algorithom
+can be described like below:
+
+
+1. Specify the number of clustering classes, and give each class a center point(randomly),
+called *cluster center*.
+2. For each data point, the closest cluster center (in L2 norm) is identified.
+3. Each cluster center is replaced by all the data-points it has identified (closest).
+4. Repeat step 2 and 3 until convergence.
+
+The whole process can be viewed below.
+
+![kmeansViz]
+
+## Expectation Maximization (EM)
+
+More generally, K-means is one special case of Expectation Maximization (EM), which is 
+used widely to estimate maximum likelihood parameters of a statistical model (especially
+when there is no analytic solution). The EM algorithm is described below.
+
+Given the statistical model which generate observable data $X$, unobserved latent data $Z$ 
+(in this case is the class every $x$ belongs to, can be listed as 0,1,2,...,n-1), parameter $\theta$,
+a likelihood function $L(\theta;X,Z) = p(X,Z|\theta)$.
+The *maximum likelihood estimate (MLE)* of the unknown parameters is determined by:
+
+~ Math
+L(\theta;X) = p(X|\theta) = \Sigma_Z p(X,Z|\theta)
+~
+
+By applying the following 2 steps, EM will seek to find the MLE iteratively:
+
+
+1. Expectation (E) step
+
+2. Maximization (M) step
+
+### E step
+ Calculate the expected value of the log likelihood function, with respect to the conditional distribution of $Z$  given $X$ under the current 
+ estimate of the parameters $\theta^{(t)}$ :
+ 
+~ Math
+Q(\theta|\theta^{(t)}) = E_{Z|X,\theta^{(t)}} [\log L(\theta;X,Z)]
+~
+### M step
+  Find the parameter that maximizes this quantity:
+~ Math
+\theta^{(t+1)} = \arg \max_\theta Q(\theta|\theta^{(t)})
+~
+
+### Whole Process
+1. initialize parameter $\theta$ with random values
+2. (E) Compute the best value  for $Z$ given parameter $\theta$
+3. (M) Then, use the just-computed values of $Z$ to compute a better estimate for the parameters $\theta$
+4. Iterate steps 2 and 3 until convergence
+
+## EM in Mixture Gaussians
+
+In mixture gaussians, EM algorithm can be regarded as a **soft** version of k-means. Instead of
+label the data with 0 or 1, EM gives each data a *responsibility* between 0 and 1, which indicates
+the propability for the data belonging to each class.
+
+In every iteration, first calculate the responsibility of each data by density function of normal distribution
+. For example, if 2 classes, the responsibility is:
+~ Math
+[\gamma, 1-\gamma], \gamma = \frac{p(x;\mu_1,\sigma_1)}{p(x;\mu_1,\sigma_1)+p(x;\mu_2,\sigma_2)}
+~
+Then, estimate the new $\theta$ and $\mu$ with data $X$, add by weight of $\gamma$.
+For example.
+~ Math
+\mu_1 = \frac{\Sigma_N \gamma_i x_i}{\Sigma_N \gamma_i}
+~
+~ Math
+\sigma_1 = \frac{\Sigma_N \gamma_i (x_i-\mu_1)^2}{\Sigma_N \gamma_i}
+~
+If we give $\gamma$ an activation function (0,1), then the EM algorithm will degenerate to k-means.
+
+# Experiment with Python
+
+With the help of EM alogrithm, I used python for experiment. Below is the script.
+
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.mixture import GMM     # Gaussian Mixure Model (GMM) module
+
+X1 = 1*np.random.randn(100) + 20    # 100 samples of N(20, 1)
+Y1 = 2*np.random.randn(100) + 10    # 100 samples of N(10, 4)
+
+X2 = 2*np.random.randn(150) + 10    # 150 samples of N(10, 4)
+Y2 = 3*np.random.randn(150) + 15    # 150 samples of N(15, 9)
+
+X = np.vstack((np.append(X1,X2),np.append(Y1,Y2))).T
+
+gmm = GMM(n_components=2)           # 2 classes
+gmm.fit(X)
+
+label = gmm.predict(X)
+
+plt.subplot(2,1,1)
+plt.title("Before EM")
+plt.scatter(X[:,0],X[:,1])
+
+plt.subplot(2,1,2)
+plt.title("After EM")
+plt.scatter(X[label==0,0],X[label==0,1],color=(0,0.5,0))
+plt.scatter(X[label==1,0],X[label==1,1],color=(0,0,0.5))
+
+plt.show()
+
+# calculate parameters accordingly
+# ... ...
+
+```
+Script outcome:
+
+![figure_1]
+
+# Dive Deep into Mixture of Gaussians
+
+In real application, mixture of gaussians may become much more complex. For example, higher
+dimension, closer distance between distributions, large amount of distributions together.
+To solve these problems, Sanjoy Dasgupta (1999) gave detailed solution including dimensionality reduction, definition of *c-seperated*, spherical density estimates and so on.
+
+Today, EM and Gaussian mixture model is widely used in statistical learning. With these analyse 
+method people are able to find valuable infomations behind large amounts of data, allowing machines
+to learn by themselves the inner-connection between seemingly-disjoint information.
+
+
+[Gaussian-mixture-example]: images/Gaussian-mixture-example.svg "Gaussian-mixture-example" { width:auto; max-width:90% }
+[sample_gmm]: images/sample_gmm.png "sample_gmm" { width:auto; max-width:90% }
+[kmeansViz]: images/kmeansViz.png "kmeansViz" { width:auto; max-width:90% }
+[figure_1]: images/figure_1.png "figure_1" { width:auto; max-width:90% }
+[Mixture distribution]: https://en.wikipedia.org/wiki/Mixture_distribution
+[Mixture model]: https://en.wikipedia.org/wiki/Mixture_model
 [reference manual]: http://research.microsoft.com/en-us/um/people/daan/madoko/doc/reference.html  "Madoko reference manual"
